@@ -59,6 +59,10 @@ jobs:
         run: |
           alembic upgrade head
 
+      - name: Seed test knowledge base
+        run: |
+          python -m app.scripts.ingest_test_knowledge
+
       - name: Run test suite
         run: |
           pytest -q -v
