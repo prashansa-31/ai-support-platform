@@ -44,6 +44,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Enable pgvector extension on test DB
+        run: |
+          python -c "
+          import asyncio, asyncpg
+          async def main():
+              conn = await asyncpg.connect('postgresql://app_user:local_dev_password@localhost:5432/ai_support_test')
+              await conn.execute('CREATE EXTENSION IF NOT EXISTS vector;')
+              await conn.close()
+          asyncio.run(main())
+          "
+
       - name: Run Alembic migrations on test DB
         run: |
           alembic upgrade head
