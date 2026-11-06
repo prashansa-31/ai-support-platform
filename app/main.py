@@ -8,13 +8,19 @@ from app.config import settings
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://ai-support-platform-gamma.vercel.app",
+    "https://ai-support-platform.vercel.app",
 ]
-if settings.frontend_url and settings.frontend_url not in origins:
-    origins.append(settings.frontend_url)
+frontend_origin = (
+    settings.frontend_url.rstrip("/") if getattr(settings, "frontend_url", None) else ""
+)
+if frontend_origin and frontend_origin not in origins:
+    origins.append(frontend_origin)
 app = FastAPI(title="AI Support Platform")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
