@@ -50,7 +50,7 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
           TEST_DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
-          JWT_SECRET_KEY: test_secret_key_that_is_at_least_32_characters_long
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           pytest -q -v
