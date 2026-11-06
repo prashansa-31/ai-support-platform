@@ -24,7 +24,11 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-
+    env:
+      DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
+      TEST_DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,16 +45,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Alembic migrations on test DB
-        env:
-          DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
         run: |
           alembic upgrade head
 
       - name: Run test suite
-        env:
-          DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
-          TEST_DATABASE_URL: postgresql+asyncpg://app_user:local_dev_password@localhost:5432/ai_support_test
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           pytest -q -v
