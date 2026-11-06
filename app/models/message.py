@@ -44,6 +44,12 @@ class Message(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
+    sender_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     role: Mapped[str] = mapped_column(
         String(50),
         nullable=False,

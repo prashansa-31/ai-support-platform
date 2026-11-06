@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     environment: str = "development"
     debug: bool = False
+    frontend_url: str = "http://localhost:5173"
 
     # Database
     database_url: str = (
@@ -28,6 +29,14 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    # RAG
+    embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+
+    # LLM
+    gemini_api_key: str = ""
+    # model_name: str = "gemini-3.8-flash"
+    model_name: str = "gemini-3.5-flash-lite"
 
 
 settings = Settings()

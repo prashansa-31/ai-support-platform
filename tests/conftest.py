@@ -1,15 +1,16 @@
 import asyncio
 import os
-
 import pytest
+from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
-
 from app.db.session import get_db
 from app.main import app
 from app.models import Conversation, Message, User
+
+load_dotenv()
 
 
 @pytest.fixture

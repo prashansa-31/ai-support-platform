@@ -1,9 +1,7 @@
-import uuid
-
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.db.base import Base, TimestampMixin
+import uuid
 
 
 class Conversation(TimestampMixin, Base):
@@ -20,6 +18,23 @@ class Conversation(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
+    assigned_to_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    assigned_type: Mapped[str] = mapped_column(
+        String(50),
+        default="ai",
+        server_default="ai",
+        nullable=False,
+        index=True,
+    )
+    escalation_reason: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
     title: Mapped[str] = mapped_column(
         String(255),
         default="Support Ticket",
@@ -28,8 +43,8 @@ class Conversation(TimestampMixin, Base):
     )
     status: Mapped[str] = mapped_column(
         String(50),
-        default="active",
-        server_default="active",
+        default="open",
+        server_default="open",
         nullable=False,
         index=True,
     )

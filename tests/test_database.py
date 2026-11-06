@@ -1,11 +1,9 @@
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
-
 from app.config import settings
 
 
-@pytest.mark.asyncio
 async def test_database_connection():
     engine = create_async_engine(settings.database_url)
 
