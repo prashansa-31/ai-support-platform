@@ -69,7 +69,6 @@ async def test_answer_question_returns_fallback_when_no_chunks_found():
     mock_generate.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_answer_uses_retrieved_context(monkeypatch):
     async def fake_retrieve_knowledge(question, limit=3):
         return [
@@ -99,7 +98,6 @@ async def test_answer_uses_retrieved_context(monkeypatch):
     assert "review" in answer.lower()
 
 
-@pytest.mark.asyncio
 async def test_answer_does_not_invent_refund_deadline(monkeypatch):
     async def fake_retrieve_knowledge(question, limit=3):
         return [
@@ -130,7 +128,6 @@ async def test_answer_does_not_invent_refund_deadline(monkeypatch):
     )
 
 
-@pytest.mark.asyncio
 async def test_answer_abstains_when_no_context_is_retrieved(monkeypatch):
     async def fake_retrieve_knowledge(question, limit=3):
         return []
@@ -144,3 +141,60 @@ async def test_answer_abstains_when_no_context_is_retrieved(monkeypatch):
     answer = await rag_answer.answer_question("What is the company's CEO's name?")
 
     assert "couldn't find relevant information" in answer.lower()
+
+
+async def test_small_talk_how_are_you_calls_small_talk_generator():
+    with patch(
+        "app.services.rag.answer.generate_small_talk_answer",
+        new_callable=AsyncMock,
+        return_value="I'm doing well, thank you! How can I help you today?",
+    ) as mock_small_talk:
+        answer = await rag_answer.answer_question("how are you doing?")
+    assert "doing well" in answer
+    mock_small_talk.assert_awaited_once()
+
+
+async def test_instant_social_reply_bypasses_llm_and_retrieval():
+    answer = await rag_answer.answer_question("thanks")
+    assert "welcome" in answer.lower()
+
+
+async def test_contextual_follow_up_rewrites_query():
+    history = [
+        {"role": "customer", "content": "where is my order?"},
+        {
+            "role": "assistant",
+            "content": "Track it using your tracking ID on our portal.",
+        },
+    ]
+    with (
+        patch(
+            "app.services.rag.answer.condense_query_with_history",
+            new_callable=AsyncMock,
+            return_value="order tracking ID not found on portal",
+        ) as mock_condense,
+        patch(
+            "app.services.rag.answer.retrieve_knowledge",
+            new_callable=AsyncMock,
+            return_value=[
+                {
+                    "source": "order_tracking.md",
+                    "content": "Contact support if tracking fails.",
+                    "similarity": 0.85,
+                }
+            ],
+        ) as mock_retrieve,
+        patch(
+            "app.services.rag.answer.generate_answer",
+            new_callable=AsyncMock,
+            return_value="If the tracking details are missing on the portal, please contact support with your order ID.",
+        ),
+    ):
+        answer = await rag_answer.answer_question(
+            "its not there", conversation_history=history
+        )
+    mock_condense.assert_awaited_once_with("its not there", history)
+    mock_retrieve.assert_awaited_once_with(
+        "order tracking ID not found on portal", limit=3
+    )
+    assert "tracking details are missing" in answer
